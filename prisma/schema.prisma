@@ -1,0 +1,65 @@
+// Reelty data model. SQLite for dev; switch provider to "postgresql" for prod.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id                   String          @id @default(cuid())
+  email                String          @unique
+  name                 String
+  brokerage            String
+  niche                String          @default("New builds")
+  plan                 String          @default("Growth")
+  creditsTotal         Int             @default(20)
+  creditsUsed          Int             @default(0)
+  approveBeforePosting Boolean         @default(true)
+  twinStatus           String          @default("none") // none | training | ready
+  brandPrimary         String          @default("#2F6BFF")
+  brandSecondary       String          @default("#1B5FAD")
+  logoLabel            String          @default("PE")
+  createdAt            DateTime        @default(now())
+  socials              SocialAccount[]
+  content              ContentItem[]
+  weeklyScripts        WeeklyScript[]
+}
+
+model SocialAccount {
+  id        String  @id @default(cuid())
+  agent     Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId   String
+  platform  String
+  handle    String
+  connected Boolean @default(false)
+}
+
+model ContentItem {
+  id           String    @id @default(cuid())
+  agent        Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId      String
+  kind         String // video | picture
+  title        String
+  typeLabel    String
+  status       String    @default("draft") // draft|rendering|ready|scheduled|posted
+  caption      String
+  platforms    String // comma-separated
+  thumb        String
+  scheduledFor DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model WeeklyScript {
+  id      String   @id @default(cuid())
+  agent   Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  tag     String
+  title   String
+  hook    String
+  caption String
+  status  String   @default("pending") // pending | building | done
+  weekOf  DateTime @default(now())
+}

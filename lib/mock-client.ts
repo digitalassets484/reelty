@@ -1,31 +1,19 @@
-// ─────────────────────────────────────────────────────────────
-// Client-side mock services. These call the integration adapters
-// directly (no network, no API routes), which keeps the app a pure
-// static export that runs fully on GitHub Pages.
-// Phase 2: swap these for real server actions / API calls.
-// ─────────────────────────────────────────────────────────────
-import {
-  scriptProvider,
-  videoProvider,
-  pictureProvider,
-} from "./integrations";
-import { ACCOUNT } from "./mock-data";
+// Client-safe mock services for render + picture (no secrets involved).
+// Script generation now goes through the server route /api/script so the
+// Claude API key stays on the server. Imports the mock classes DIRECTLY
+// (not the server-only resolver) to keep server SDKs out of the client bundle.
+import { MockHeyGen } from "./integrations/heygen";
+import { MockPlacid } from "./integrations/placid";
 
-export async function writeScript(videoType: string, inputs: Record<string, string>) {
-  return scriptProvider.write({
-    videoType,
-    brokerage: ACCOUNT.brokerage,
-    agentName: ACCOUNT.name,
-    inputs,
-  });
-}
+const heygen = new MockHeyGen();
+const placid = new MockPlacid();
 
 export async function renderVideo(script: string, durationSec = 45) {
-  const job = await videoProvider.render({ script, avatarId: "twin_default", durationSec });
-  const done = await videoProvider.getJob(job.jobId);
+  const job = await heygen.render({ script, avatarId: "twin_default", durationSec });
+  const done = await heygen.getJob(job.jobId);
   return { ...done, creditsUsed: job.creditsUsed };
 }
 
 export async function generatePicture(templateId: string, fields: Record<string, string>) {
-  return pictureProvider.generate({ templateId, fields });
+  return placid.generate({ templateId, fields });
 }

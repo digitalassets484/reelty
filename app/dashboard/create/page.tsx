@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { VIDEO_TYPES, type VideoType } from "@/lib/mock-data";
-import { writeScript, renderVideo as renderVideoJob } from "@/lib/mock-client";
+import { renderVideo as renderVideoJob } from "@/lib/mock-client";
 import {
   Sparkles,
   Clapperboard,
@@ -74,7 +74,12 @@ function CreateFlow() {
     setInputs({ prompt: agentPrompt });
     setPulled(false);
     setLoading(true);
-    const data = await writeScript("video-agent", { prompt: agentPrompt });
+    const res = await fetch("/api/script", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoType: "video-agent", inputs: { prompt: agentPrompt } }),
+    });
+    const data = await res.json();
     setScript(data);
     setLoading(false);
     setStep("script");
@@ -95,7 +100,12 @@ function CreateFlow() {
 
   async function generateScript() {
     setLoading(true);
-    const data = await writeScript(vtype!.id, inputs);
+    const res = await fetch("/api/script", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoType: vtype!.id, inputs }),
+    });
+    const data = await res.json();
     setScript(data);
     setLoading(false);
     setStep("script");

@@ -1,14 +1,8 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === "production";
-const repo = "reelty"; // GitHub Pages project path: digitalassets484.github.io/<repo>
-
+// Phase 2: real server app (deploy to Vercel). The Phase-1 static export
+// config (output:"export" + basePath) lives on the gh-pages snapshot only.
 const nextConfig = {
-  output: "export", // static site for GitHub Pages
   reactStrictMode: true,
-  trailingSlash: true,
-  images: { unoptimized: true },
-  basePath: isProd ? `/${repo}` : "",
-  assetPrefix: isProd ? `/${repo}/` : "",
 };
 
 export default nextConfig;
