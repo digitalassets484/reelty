@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { useDashboard } from "@/components/DashboardProvider";
 import { generatePicture } from "@/lib/mock-client";
-import { ImageIcon, Loader2, Download, ArrowLeft, Wand2 } from "lucide-react";
+import { savePicture } from "@/app/content-actions";
+import { ImageIcon, Loader2, Download, ArrowLeft, Wand2, Check } from "lucide-react";
 
 type Template = {
   id: string;
@@ -52,17 +54,29 @@ const TEMPLATES: Template[] = [
 
 export default function PicturePostsPage() {
   const { agent } = useDashboard();
+  const router = useRouter();
   const [tpl, setTpl] = useState<Template | null>(null);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   async function generate() {
     setLoading(true);
     setDone(false);
+    setSaved(false);
     await generatePicture(tpl!.id, fields);
     setLoading(false);
     setDone(true);
+  }
+
+  async function save() {
+    if (!tpl) return;
+    const title = `${tpl.name}${fields.address ? ` — ${fields.address}` : ""}`;
+    const caption = Object.values(fields).filter(Boolean).join(" · ");
+    await savePicture({ title, caption, thumb: tpl.accent });
+    setSaved(true);
+    router.refresh();
   }
 
   return (
@@ -80,6 +94,7 @@ export default function PicturePostsPage() {
                     setTpl(t);
                     setFields({});
                     setDone(false);
+                    setSaved(false);
                   }}
                   className="card group overflow-hidden p-0 text-left transition hover:shadow-glow"
                 >
@@ -145,11 +160,16 @@ export default function PicturePostsPage() {
                 </div>
                 <div className="text-xs font-medium text-white/80">{agent.name}{agent.brokerage ? ` · ${agent.brokerage}` : ""}</div>
               </div>
-              {done && (
-                <button className="btn-dark mt-4 w-full">
-                  <Download size={18} /> Save to library
-                </button>
-              )}
+              {done &&
+                (saved ? (
+                  <div className="btn mt-4 w-full bg-emerald-600 text-white">
+                    <Check size={18} /> Saved to library
+                  </div>
+                ) : (
+                  <button onClick={save} className="btn-dark mt-4 w-full">
+                    <Download size={18} /> Save to library
+                  </button>
+                ))}
             </div>
           </div>
         )}

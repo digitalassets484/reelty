@@ -2,20 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDashboard } from "@/components/DashboardProvider";
+import { approveWeekly } from "@/app/content-actions";
 import { CalendarDays, Check, Loader2, Pencil, Sparkles } from "lucide-react";
 
 type S = "pending" | "building" | "done";
 
 export function MondayDrop() {
   const { agent, weekly } = useDashboard();
+  const router = useRouter();
   const [states, setStates] = useState<Record<string, S>>({});
   const set = (id: string, s: S) => setStates((p) => ({ ...p, [id]: s }));
 
   async function approve(id: string) {
     set(id, "building");
-    await new Promise((r) => setTimeout(r, 1300)); // Phase 2: trigger real build + schedule
-    set(id, "done");
+    await approveWeekly(id); // saves a scheduled video + removes the draft
+    router.refresh();
   }
 
   const building = Object.values(states).filter((s) => s === "building").length;

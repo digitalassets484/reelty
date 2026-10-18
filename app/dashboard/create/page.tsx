@@ -119,10 +119,23 @@ function CreateFlow() {
     const timer = setInterval(() => {
       setRenderPct((p) => Math.min(p + 8, 92));
     }, 220);
+    const title =
+      vtype!.id === "video-agent"
+        ? script!.hook.slice(0, 60)
+        : inputs.address
+          ? `${vtype!.card.title} — ${inputs.address}`
+          : vtype!.card.title;
     const res = await fetch("/api/render", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ script: script!.script, durationSec: 45 }),
+      body: JSON.stringify({
+        script: script!.script,
+        durationSec: 45,
+        title,
+        typeLabel: vtype!.label,
+        caption: script!.caption,
+        thumb: vtype!.card.gradient,
+      }),
     });
     clearInterval(timer);
     if (res.status === 402) {

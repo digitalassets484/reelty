@@ -5,10 +5,19 @@ import { videoProvider } from "@/lib/integrations";
 
 export const runtime = "nodejs";
 
-// Renders the avatar video and meters one credit (two for > 60s).
+// Renders the avatar video, meters a credit, and saves it to the library.
 // Rejects with 402 when the agent is out of credits.
 export async function POST(req: Request) {
-  const { durationSec = 45, script = "" } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const {
+    durationSec = 45,
+    script = "",
+    title = "New video",
+    typeLabel = "Video",
+    caption = "",
+    thumb = "from-brand to-brand-dark",
+  } = body;
+
   const agentId = await getSessionAgentId();
   if (!agentId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -27,6 +36,13 @@ export async function POST(req: Request) {
   const job = await videoProvider.render({ script, avatarId: "twin_default", durationSec });
   await videoProvider.getJob(job.jobId);
 
+  const socials = await prisma.socialAccount.findMany({ where: { agentId, connected: true } });
+  const platforms = socials.length ? socials.map((s) => s.platform).join(",") : "instagram,facebook";
+
+  const item = await prisma.contentItem.create({
+    data: { agentId, kind: "video", title, typeLabel, status: "ready", caption, platforms, thumb },
+  });
+
   const updated = await prisma.agent.update({
     where: { id: agentId },
     data: { creditsUsed: agent.creditsUsed + cost },
@@ -34,6 +50,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
+    contentId: item.id,
     creditsUsed: updated.creditsUsed,
     creditsTotal: updated.creditsTotal,
     creditsLeft: updated.creditsTotal - updated.creditsUsed,

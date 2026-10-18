@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { useDashboard } from "@/components/DashboardProvider";
+import { scheduleContent } from "@/app/content-actions";
 import { platformLabel, type ContentItem } from "@/lib/mock-data";
 import { Video, ImageIcon, CheckCircle2, CalendarClock, X } from "lucide-react";
 
@@ -106,7 +107,13 @@ function DetailDrawer({ item, onClose }: { item: ContentItem; onClose: () => voi
             <CheckCircle2 size={18} /> Queued in your GHL planner — pending your approval.
           </div>
         ) : (
-          <button onClick={() => setScheduled(true)} className="btn-primary mt-6 w-full">
+          <button
+            onClick={async () => {
+              await scheduleContent(item.id);
+              setScheduled(true);
+            }}
+            className="btn-primary mt-6 w-full"
+          >
             <CalendarClock size={18} /> Approve & schedule
           </button>
         )}
