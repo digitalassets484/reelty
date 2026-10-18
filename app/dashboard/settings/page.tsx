@@ -5,6 +5,7 @@ import { Topbar } from "@/components/dashboard/Topbar";
 import { useDashboard } from "@/components/DashboardProvider";
 import { PLANS, platformLabel } from "@/lib/mock-data";
 import { startCheckout } from "@/app/billing-actions";
+import { updateProfile, toggleSocial, setApprove as persistApprove, createTwin } from "@/app/settings-actions";
 import { CheckCircle2, Clock, Plus } from "lucide-react";
 
 export default function SettingsPage() {
@@ -17,17 +18,21 @@ export default function SettingsPage() {
       <Topbar title="Settings" subtitle="Your brand, avatar, socials and plan." />
       <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
         {/* Brand kit */}
-        <section className="card p-7">
+        <form action={updateProfile} className="card p-7">
           <h2 className="font-bold text-ink">Brand kit</h2>
           <p className="mt-1 text-sm text-ink/55">Used on every video and picture post.</p>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
               <label className="label">Name</label>
-              <input className="input" defaultValue={agent.name} />
+              <input name="name" className="input" defaultValue={agent.name} />
             </div>
             <div>
               <label className="label">Brokerage</label>
-              <input className="input" defaultValue={agent.brokerage} placeholder="e.g. lpt realty" />
+              <input name="brokerage" className="input" defaultValue={agent.brokerage} placeholder="e.g. lpt realty" />
+            </div>
+            <div>
+              <label className="label">Niche</label>
+              <input name="niche" className="input" defaultValue={agent.niche} placeholder="New builds, luxury, resale, investor…" />
             </div>
           </div>
           <div className="mt-5 flex items-center gap-6">
@@ -47,7 +52,8 @@ export default function SettingsPage() {
             </div>
           </div>
           <p className="mt-4 text-xs text-ink/45">Colors are auto-extracted from your uploaded logo.</p>
-        </section>
+          <button type="submit" className="btn-primary mt-5 !py-2.5 text-sm">Save brand kit</button>
+        </form>
 
         {/* Digital twin */}
         <section className="card p-7">
@@ -66,7 +72,13 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-            <button className="btn-ghost !py-2 text-sm">{agent.twinStatus === "ready" ? "Retrain" : "Create"}</button>
+            {agent.twinStatus === "ready" ? (
+              <button className="btn-ghost !py-2 text-sm">Retrain</button>
+            ) : (
+              <form action={createTwin}>
+                <button className="btn-primary !py-2 text-sm">Create</button>
+              </form>
+            )}
           </div>
         </section>
 
@@ -82,11 +94,13 @@ export default function SettingsPage() {
                   <div className="text-sm font-semibold text-ink">{platformLabel(s.platform)}</div>
                   <div className="text-xs text-ink/45">{s.handle}</div>
                 </div>
-                {s.connected ? (
-                  <span className="chip bg-emerald-100 text-emerald-700">Connected</span>
-                ) : (
-                  <button className="chip bg-brand/10 text-brand"><Plus size={13} /> Connect</button>
-                )}
+                <form action={toggleSocial.bind(null, s.platform)}>
+                  {s.connected ? (
+                    <button className="chip bg-emerald-100 text-emerald-700">Connected</button>
+                  ) : (
+                    <button className="chip bg-brand/10 text-brand"><Plus size={13} /> Connect</button>
+                  )}
+                </form>
               </div>
             ))}
           </div>
@@ -101,7 +115,11 @@ export default function SettingsPage() {
               <div className="text-xs text-ink/45">Recommended for compliance. Review each post before it goes live.</div>
             </div>
             <button
-              onClick={() => setApprove(!approve)}
+              onClick={() => {
+                const v = !approve;
+                setApprove(v);
+                persistApprove(v);
+              }}
               className={`relative h-7 w-12 rounded-full transition ${approve ? "bg-brand" : "bg-ink/20"}`}
             >
               <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${approve ? "left-6" : "left-1"}`} />

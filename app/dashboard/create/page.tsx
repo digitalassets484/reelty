@@ -89,10 +89,22 @@ function CreateFlow() {
   async function pullDetails() {
     if (!inputs.listingLink || !vtype) return;
     setPulling(true);
-    await new Promise((r) => setTimeout(r, 900)); // Phase 2: fetch + parse the real listing
+    let parsed: Record<string, string> = {};
+    try {
+      const res = await fetch("/api/listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: inputs.listingLink }),
+      });
+      parsed = await res.json();
+    } catch {
+      /* fall back to sample below */
+    }
     const next = { ...inputs };
     for (const f of vtype.inputs) {
-      if (f.key !== "listingLink" && SAMPLE_LISTING[f.key]) next[f.key] = SAMPLE_LISTING[f.key];
+      if (f.key === "listingLink") continue;
+      // Use the real parse when available, else the demo sample.
+      next[f.key] = parsed[f.key] || SAMPLE_LISTING[f.key] || next[f.key] || "";
     }
     setInputs(next);
     setPulling(false);
