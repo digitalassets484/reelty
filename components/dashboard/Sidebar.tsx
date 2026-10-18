@@ -9,8 +9,10 @@ import {
   LibraryBig,
   CalendarClock,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { logoutAction } from "@/app/actions";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -53,6 +55,14 @@ export function Sidebar() {
       >
         + New content
       </Link>
+      <form action={logoutAction} className="mt-2">
+        <button
+          type="submit"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/50 transition hover:bg-white/5 hover:text-white"
+        >
+          <LogOut size={18} /> Log out
+        </button>
+      </form>
     </aside>
   );
 }

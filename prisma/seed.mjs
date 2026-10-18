@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +12,7 @@ async function main() {
   const agent = await prisma.agent.create({
     data: {
       email: "peter@reelty.app",
+      passwordHash: await bcrypt.hash("reelty123", 10),
       name: "Peter Eki",
       brokerage: "lpt realty",
       niche: "New builds",

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { WEEKLY_SCRIPTS, ACCOUNT } from "@/lib/mock-data";
+import { useDashboard } from "@/components/DashboardProvider";
 import { CalendarDays, Check, Loader2, Pencil, Sparkles } from "lucide-react";
 
 type S = "pending" | "building" | "done";
 
 export function MondayDrop() {
+  const { agent, weekly } = useDashboard();
   const [states, setStates] = useState<Record<string, S>>({});
   const set = (id: string, s: S) => setStates((p) => ({ ...p, [id]: s }));
 
@@ -19,6 +20,8 @@ export function MondayDrop() {
 
   const building = Object.values(states).filter((s) => s === "building").length;
 
+  if (weekly.length === 0) return null;
+
   return (
     <section className="card overflow-hidden p-0">
       <div className="flex items-center justify-between gap-3 border-b border-ink/5 bg-gradient-to-r from-brand/10 to-transparent px-6 py-4">
@@ -29,8 +32,8 @@ export function MondayDrop() {
           <div>
             <h2 className="font-extrabold text-ink">This week&apos;s scripts are ready</h2>
             <p className="text-sm text-ink/55">
-              3 drafts on {ACCOUNT.niche.toLowerCase()} + your Calgary market. Approve and we build + schedule them —
-              no work on your end.
+              {weekly.length} drafts on {agent.niche.toLowerCase()} + your Calgary market. Approve and we build +
+              schedule them — no work on your end.
             </p>
           </div>
         </div>
@@ -40,7 +43,7 @@ export function MondayDrop() {
       </div>
 
       <div className="grid gap-px bg-ink/5 sm:grid-cols-3">
-        {WEEKLY_SCRIPTS.map((s) => {
+        {weekly.map((s) => {
           const st = states[s.id] ?? "pending";
           return (
             <div key={s.id} className="flex flex-col bg-white p-5">

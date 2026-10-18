@@ -1,8 +1,26 @@
+"use client";
+
 import Link from "next/link";
+import { useFormState, useFormStatus } from "react-dom";
 import { Logo } from "@/components/Logo";
+import { loginAction, signupAction, type AuthState } from "@/app/actions";
+
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className="btn-primary w-full">
+      {pending ? "One sec…" : label}
+    </button>
+  );
+}
 
 export function AuthScreen({ mode }: { mode: "login" | "signup" }) {
   const isSignup = mode === "signup";
+  const [state, action] = useFormState<AuthState, FormData>(
+    isSignup ? signupAction : loginAction,
+    {},
+  );
+
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
       <div className="flex flex-col justify-center px-6 py-12 sm:px-16">
@@ -15,24 +33,32 @@ export function AuthScreen({ mode }: { mode: "login" | "signup" }) {
             {isSignup ? "Start posting like you have a marketing team." : "Log in to your content dashboard."}
           </p>
 
-          <form className="mt-8 space-y-4">
+          <form action={action} className="mt-8 space-y-4">
             {isSignup && (
               <div>
                 <label className="label">Full name</label>
-                <input className="input" placeholder="Peter Eki" />
+                <input name="name" className="input" placeholder="Peter Eki" autoComplete="name" />
               </div>
             )}
             <div>
               <label className="label">Email</label>
-              <input className="input" type="email" placeholder="you@email.com" />
+              <input name="email" className="input" type="email" placeholder="you@email.com" autoComplete="email" required />
             </div>
             <div>
               <label className="label">Password</label>
-              <input className="input" type="password" placeholder="••••••••" />
+              <input
+                name="password"
+                className="input"
+                type="password"
+                placeholder="••••••••"
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                required
+              />
             </div>
-            <Link href="/dashboard" className="btn-primary w-full">
-              {isSignup ? "Create account" : "Log in"}
-            </Link>
+            {state?.error && (
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">{state.error}</p>
+            )}
+            <SubmitButton label={isSignup ? "Create account" : "Log in"} />
           </form>
 
           <p className="mt-6 text-center text-sm text-ink/55">
@@ -42,7 +68,6 @@ export function AuthScreen({ mode }: { mode: "login" | "signup" }) {
               <>New here? <Link href="/signup" className="font-semibold text-brand">Create an account</Link></>
             )}
           </p>
-          <p className="mt-4 text-center text-xs text-ink/35">Prototype — any details take you to the dashboard.</p>
         </div>
       </div>
 

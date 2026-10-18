@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { MondayDrop } from "@/components/dashboard/MondayDrop";
-import { ACCOUNT, LIBRARY, SOCIALS, VIDEO_TYPES, platformLabel, type VideoType } from "@/lib/mock-data";
+import { useDashboard } from "@/components/DashboardProvider";
+import { VIDEO_TYPES, platformLabel, type VideoType } from "@/lib/mock-data";
 import {
   ArrowRight,
   Check,
@@ -13,7 +16,6 @@ import {
   UserRound,
   MapPin,
   Lightbulb,
-  ImageIcon,
   Mic,
   Palette,
   Video as VideoIcon,
@@ -40,9 +42,11 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function DashboardHome() {
+  const { agent, content, socials } = useDashboard();
+
   return (
     <>
-      <Topbar title={`Hey, ${ACCOUNT.name.split(" ")[0]} 👋`} subtitle="What do you want to post today?" />
+      <Topbar title={`Hey, ${agent.name.split(" ")[0]} 👋`} subtitle="What do you want to post today?" />
       <div className="space-y-10 p-6">
         <MondayDrop />
         <SetupSteps />
@@ -66,7 +70,7 @@ export default function DashboardHome() {
           </div>
         </Link>
 
-        {/* CONTENT-TYPE GALLERY (the main thing) */}
+        {/* CONTENT-TYPE GALLERY */}
         <section>
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -77,7 +81,6 @@ export default function DashboardHome() {
               Or make a picture post →
             </Link>
           </div>
-
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {VIDEO_TYPES.map((t) => (
               <ContentCard key={t.id} type={t} />
@@ -96,7 +99,8 @@ export default function DashboardHome() {
                 </Link>
               </div>
               <div className="space-y-3">
-                {LIBRARY.map((item) => (
+                {content.length === 0 && <p className="text-sm text-ink/45">Nothing yet — create your first video above.</p>}
+                {content.slice(0, 5).map((item) => (
                   <div key={item.id} className="flex items-center gap-4 rounded-xl p-2 hover:bg-ink/[0.02]">
                     <div className={`h-12 w-12 shrink-0 rounded-lg bg-gradient-to-br ${item.thumb}`} />
                     <div className="min-w-0 flex-1">
@@ -116,26 +120,29 @@ export default function DashboardHome() {
             <div className="card p-6">
               <h2 className="font-bold text-ink">Video credits</h2>
               <div className="mt-4 flex items-end justify-between">
-                <span className="text-3xl font-extrabold text-ink">{ACCOUNT.creditsTotal - ACCOUNT.creditsUsed}</span>
-                <span className="text-sm text-ink/45">of {ACCOUNT.creditsTotal} left</span>
+                <span className="text-3xl font-extrabold text-ink">{agent.creditsTotal - agent.creditsUsed}</span>
+                <span className="text-sm text-ink/45">of {agent.creditsTotal} left</span>
               </div>
               <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-ink/10">
                 <div
                   className="h-full rounded-full bg-brand"
-                  style={{ width: `${Math.round((ACCOUNT.creditsUsed / ACCOUNT.creditsTotal) * 100)}%` }}
+                  style={{ width: `${Math.round((agent.creditsUsed / agent.creditsTotal) * 100)}%` }}
                 />
               </div>
-              <p className="mt-3 text-xs text-ink/45">Resets on the 1st. Picture posts don't use credits.</p>
+              <p className="mt-3 text-xs text-ink/45">Resets on the 1st. Picture posts don&apos;t use credits.</p>
             </div>
 
             <div className="card p-6">
               <h2 className="font-bold text-ink">Connected socials</h2>
               <div className="mt-3 flex flex-wrap gap-2">
-                {SOCIALS.filter((s) => s.connected).map((s) => (
+                {socials.filter((s) => s.connected).map((s) => (
                   <span key={s.platform} className="chip bg-ink/[0.04] text-ink/60 ring-1 ring-ink/10">
                     {platformLabel(s.platform)}
                   </span>
                 ))}
+                {socials.filter((s) => s.connected).length === 0 && (
+                  <span className="text-sm text-ink/45">None yet.</span>
+                )}
               </div>
               <Link href="/dashboard/settings" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline">
                 Manage <ArrowRight size={14} />
@@ -168,10 +175,11 @@ function ContentCard({ type }: { type: VideoType }) {
 }
 
 function SetupSteps() {
+  const { agent, socials } = useDashboard();
   const steps = [
-    { n: 1, title: "Create your avatar", desc: "A 15-second clip becomes your digital twin.", icon: VideoIcon, done: ACCOUNT.twinStatus === "ready" },
-    { n: 2, title: "Set your brand kit", desc: "Logo, colors and brokerage on every post.", icon: Palette, done: true },
-    { n: 3, title: "Connect your socials", desc: "Link your accounts for auto-posting.", icon: Mic, done: SOCIALS.some((s) => s.connected) },
+    { n: 1, title: "Create your avatar", desc: "A 15-second clip becomes your digital twin.", icon: VideoIcon, done: agent.twinStatus === "ready" },
+    { n: 2, title: "Set your brand kit", desc: "Logo, colors and brokerage on every post.", icon: Palette, done: Boolean(agent.brokerage) },
+    { n: 3, title: "Connect your socials", desc: "Link your accounts for auto-posting.", icon: Mic, done: socials.some((s) => s.connected) },
     { n: 4, title: "Make your first video", desc: "Pick a format below and hit create.", icon: Sparkles, done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -187,10 +195,7 @@ function SetupSteps() {
         {steps.map((s) => {
           const active = s.n === firstOpen;
           return (
-            <div
-              key={s.n}
-              className={`card relative p-5 ${active ? "ring-2 ring-brand shadow-glow" : ""}`}
-            >
+            <div key={s.n} className={`card relative p-5 ${active ? "ring-2 ring-brand shadow-glow" : ""}`}>
               <div className="flex items-center justify-between">
                 <span
                   className={`grid h-9 w-9 place-items-center rounded-xl ${

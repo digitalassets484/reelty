@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Topbar } from "@/components/dashboard/Topbar";
-import { ACCOUNT, SOCIALS, PLANS, platformLabel } from "@/lib/mock-data";
-import { CheckCircle2, Plus } from "lucide-react";
+import { useDashboard } from "@/components/DashboardProvider";
+import { PLANS, platformLabel } from "@/lib/mock-data";
+import { CheckCircle2, Clock, Plus } from "lucide-react";
 
 export default function SettingsPage() {
-  const [approve, setApprove] = useState(ACCOUNT.approveBeforePosting);
-  const plan = PLANS.find((p) => p.name === ACCOUNT.plan)!;
+  const { agent, socials } = useDashboard();
+  const [approve, setApprove] = useState(agent.approveBeforePosting);
+  const plan = PLANS.find((p) => p.name === agent.plan) ?? PLANS[1];
 
   return (
     <>
@@ -20,29 +22,30 @@ export default function SettingsPage() {
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
               <label className="label">Name</label>
-              <input className="input" defaultValue={ACCOUNT.name} />
+              <input className="input" defaultValue={agent.name} />
             </div>
             <div>
               <label className="label">Brokerage</label>
-              <input className="input" defaultValue={ACCOUNT.brokerage} />
+              <input className="input" defaultValue={agent.brokerage} placeholder="e.g. lpt realty" />
             </div>
           </div>
           <div className="mt-5 flex items-center gap-6">
             <div>
               <label className="label">Primary</label>
               <div className="flex items-center gap-2">
-                <span className="h-9 w-9 rounded-lg ring-1 ring-ink/10" style={{ background: ACCOUNT.brand.primary }} />
-                <span className="text-sm text-ink/60">{ACCOUNT.brand.primary}</span>
+                <span className="h-9 w-9 rounded-lg ring-1 ring-ink/10" style={{ background: agent.brand.primary }} />
+                <span className="text-sm text-ink/60">{agent.brand.primary}</span>
               </div>
             </div>
             <div>
               <label className="label">Secondary</label>
               <div className="flex items-center gap-2">
-                <span className="h-9 w-9 rounded-lg ring-1 ring-ink/10" style={{ background: ACCOUNT.brand.secondary }} />
-                <span className="text-sm text-ink/60">{ACCOUNT.brand.secondary}</span>
+                <span className="h-9 w-9 rounded-lg ring-1 ring-ink/10" style={{ background: agent.brand.secondary }} />
+                <span className="text-sm text-ink/60">{agent.brand.secondary}</span>
               </div>
             </div>
           </div>
+          <p className="mt-4 text-xs text-ink/45">Colors are auto-extracted from your uploaded logo.</p>
         </section>
 
         {/* Digital twin */}
@@ -50,13 +53,19 @@ export default function SettingsPage() {
           <h2 className="font-bold text-ink">Digital twin</h2>
           <div className="mt-4 flex items-center justify-between rounded-xl bg-ink/[0.03] p-4 ring-1 ring-ink/5">
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="text-emerald-500" size={22} />
+              {agent.twinStatus === "ready" ? (
+                <CheckCircle2 className="text-emerald-500" size={22} />
+              ) : (
+                <Clock className="text-ink/40" size={22} />
+              )}
               <div>
-                <div className="text-sm font-semibold capitalize text-ink">{ACCOUNT.twinStatus}</div>
-                <div className="text-xs text-ink/45">Created during setup. Used for all avatar videos.</div>
+                <div className="text-sm font-semibold capitalize text-ink">{agent.twinStatus}</div>
+                <div className="text-xs text-ink/45">
+                  {agent.twinStatus === "ready" ? "Used for all avatar videos." : "Record a 15-second clip to create it."}
+                </div>
               </div>
             </div>
-            <button className="btn-ghost !py-2 text-sm">Retrain</button>
+            <button className="btn-ghost !py-2 text-sm">{agent.twinStatus === "ready" ? "Retrain" : "Create"}</button>
           </div>
         </section>
 
@@ -65,7 +74,8 @@ export default function SettingsPage() {
           <h2 className="font-bold text-ink">Connected socials</h2>
           <p className="mt-1 text-sm text-ink/55">Managed in your GHL sub-account. Posts route here automatically.</p>
           <div className="mt-5 space-y-2.5">
-            {SOCIALS.map((s) => (
+            {socials.length === 0 && <p className="text-sm text-ink/45">No socials connected yet.</p>}
+            {socials.map((s) => (
               <div key={s.platform} className="flex items-center justify-between rounded-xl bg-ink/[0.02] p-3 ring-1 ring-ink/5">
                 <div>
                   <div className="text-sm font-semibold text-ink">{platformLabel(s.platform)}</div>

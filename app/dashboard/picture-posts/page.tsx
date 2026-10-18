@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Topbar } from "@/components/dashboard/Topbar";
-import { ACCOUNT } from "@/lib/mock-data";
+import { useDashboard } from "@/components/DashboardProvider";
 import { generatePicture } from "@/lib/mock-client";
 import { ImageIcon, Loader2, Download, ArrowLeft, Wand2 } from "lucide-react";
 
@@ -51,6 +51,7 @@ const TEMPLATES: Template[] = [
 ];
 
 export default function PicturePostsPage() {
+  const { agent } = useDashboard();
   const [tpl, setTpl] = useState<Template | null>(null);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -128,7 +129,7 @@ export default function PicturePostsPage() {
               <div className={`relative flex aspect-square w-full flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br ${tpl.accent} p-6 text-white`}>
                 <div className="flex items-center justify-between">
                   <span className="grid h-10 w-10 place-items-center rounded-lg bg-white/20 text-sm font-bold">
-                    {ACCOUNT.brand.logoLabel}
+                    {agent.brand.logoLabel}
                   </span>
                   <span className="chip bg-white/20 text-xs text-white">{tpl.name.toUpperCase()}</span>
                 </div>
@@ -142,7 +143,7 @@ export default function PicturePostsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-xs font-medium text-white/80">{ACCOUNT.name} · {ACCOUNT.brokerage}</div>
+                <div className="text-xs font-medium text-white/80">{agent.name}{agent.brokerage ? ` · ${agent.brokerage}` : ""}</div>
               </div>
               {done && (
                 <button className="btn-dark mt-4 w-full">

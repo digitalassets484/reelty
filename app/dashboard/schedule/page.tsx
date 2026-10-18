@@ -1,11 +1,15 @@
+"use client";
+
 import { Topbar } from "@/components/dashboard/Topbar";
-import { LIBRARY, platformLabel } from "@/lib/mock-data";
+import { useDashboard } from "@/components/DashboardProvider";
+import { platformLabel } from "@/lib/mock-data";
 import { ShieldCheck, Video, ImageIcon } from "lucide-react";
 
 export default function SchedulePage() {
-  const queued = LIBRARY.filter((i) => i.scheduledFor).sort(
-    (a, b) => new Date(a.scheduledFor!).getTime() - new Date(b.scheduledFor!).getTime(),
-  );
+  const { content } = useDashboard();
+  const queued = content
+    .filter((i) => i.scheduledFor)
+    .sort((a, b) => new Date(a.scheduledFor!).getTime() - new Date(b.scheduledFor!).getTime());
 
   return (
     <>
@@ -18,6 +22,10 @@ export default function SchedulePage() {
             for your tap before your GHL planner sends it live.
           </span>
         </div>
+
+        {queued.length === 0 && (
+          <p className="text-sm text-ink/45">Nothing scheduled yet. Approve content in your Library to queue it here.</p>
+        )}
 
         <div className="space-y-3">
           {queued.map((item) => {

@@ -11,6 +11,7 @@ datasource db {
 model Agent {
   id                   String          @id @default(cuid())
   email                String          @unique
+  passwordHash         String?
   name                 String
   brokerage            String
   niche                String          @default("New builds")

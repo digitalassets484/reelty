@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Topbar } from "@/components/dashboard/Topbar";
-import { LIBRARY, platformLabel, type ContentItem } from "@/lib/mock-data";
+import { useDashboard } from "@/components/DashboardProvider";
+import { platformLabel, type ContentItem } from "@/lib/mock-data";
 import { Video, ImageIcon, CheckCircle2, CalendarClock, X } from "lucide-react";
 
 const statusStyles: Record<string, string> = {
@@ -16,10 +17,11 @@ const statusStyles: Record<string, string> = {
 const FILTERS = ["all", "video", "picture"] as const;
 
 export default function LibraryPage() {
+  const { content } = useDashboard();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
   const [active, setActive] = useState<ContentItem | null>(null);
 
-  const items = LIBRARY.filter((i) => filter === "all" || i.kind === filter);
+  const items = content.filter((i) => filter === "all" || i.kind === filter);
 
   return (
     <>
