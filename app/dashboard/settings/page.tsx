@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { useDashboard } from "@/components/DashboardProvider";
 import { PLANS, platformLabel } from "@/lib/mock-data";
+import { startCheckout } from "@/app/billing-actions";
 import { CheckCircle2, Clock, Plus } from "lucide-react";
 
 export default function SettingsPage() {
@@ -108,16 +109,36 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Plan */}
+        {/* Plan & billing */}
         <section className="card p-7">
-          <h2 className="font-bold text-ink">Plan</h2>
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-ink p-5 text-white">
-            <div>
-              <div className="text-lg font-bold">{plan.name}</div>
-              <div className="text-sm text-white/60">${plan.price}/mo · {plan.videos} videos</div>
-            </div>
-            <button className="btn-primary !py-2.5 text-sm">Upgrade</button>
+          <h2 className="font-bold text-ink">Plan &amp; billing</h2>
+          <p className="mt-1 text-sm text-ink/55">You&apos;re on the {plan.name} plan.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {PLANS.map((p) => {
+              const current = p.name === agent.plan;
+              return (
+                <div
+                  key={p.id}
+                  className={`rounded-2xl p-4 ring-1 ${current ? "bg-ink text-white ring-ink" : "bg-ink/[0.02] text-ink ring-ink/10"}`}
+                >
+                  <div className="font-bold">{p.name}</div>
+                  <div className={`text-sm ${current ? "text-white/60" : "text-ink/50"}`}>
+                    ${p.price}/mo · {p.videos} videos
+                  </div>
+                  {current ? (
+                    <div className="mt-3 chip bg-white/15 text-white">Current</div>
+                  ) : (
+                    <form action={startCheckout.bind(null, p.id)} className="mt-3">
+                      <button className="btn-primary w-full !py-2 text-sm">
+                        {p.price > plan.price ? "Upgrade" : "Switch"}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          <p className="mt-3 text-xs text-ink/45">Plus a one-time setup fee, waived on annual plans.</p>
         </section>
       </div>
     </>

@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { VIDEO_TYPES, type VideoType } from "@/lib/mock-data";
-import { renderVideo as renderVideoJob } from "@/lib/mock-client";
 import {
   Sparkles,
   Clapperboard,
@@ -57,6 +56,7 @@ export default function CreatePage() {
 
 function CreateFlow() {
   const params = useSearchParams();
+  const router = useRouter();
   const preset = VIDEO_TYPES.find((v) => v.id === params.get("type")) ?? null;
   const [step, setStep] = useState<Step>(preset ? "inputs" : "type");
   const [vtype, setVtype] = useState<VideoType | null>(preset);
@@ -67,6 +67,7 @@ function CreateFlow() {
   const [pulling, setPulling] = useState(false);
   const [pulled, setPulled] = useState(false);
   const [agentPrompt, setAgentPrompt] = useState("");
+  const [noCredits, setNoCredits] = useState(false);
 
   async function startVideoAgent() {
     if (!agentPrompt.trim()) return;
@@ -112,14 +113,26 @@ function CreateFlow() {
   }
 
   async function renderVideo() {
+    setNoCredits(false);
     setStep("render");
     setRenderPct(0);
     const timer = setInterval(() => {
       setRenderPct((p) => Math.min(p + 8, 92));
     }, 220);
-    await renderVideoJob(script!.script, 45);
+    const res = await fetch("/api/render", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ script: script!.script, durationSec: 45 }),
+    });
     clearInterval(timer);
+    if (res.status === 402) {
+      setRenderPct(0);
+      setNoCredits(true);
+      setStep("script");
+      return;
+    }
     setRenderPct(100);
+    router.refresh(); // reflect the deducted credit in the Topbar
     setTimeout(() => setStep("done"), 500);
   }
 
@@ -299,6 +312,12 @@ function CreateFlow() {
               </div>
             </div>
 
+            {noCredits && (
+              <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-700 ring-1 ring-amber-200">
+                You&apos;re out of credits.{" "}
+                <a href="/dashboard/settings" className="font-semibold underline">Upgrade your plan</a> to keep creating.
+              </div>
+            )}
             <div className="flex gap-3">
               <BackBtn onClick={() => setStep("inputs")} label="Edit details" inline />
               <button onClick={renderVideo} className="btn-primary flex-1">
