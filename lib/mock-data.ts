@@ -183,6 +183,7 @@ export type ContentItem = {
   scheduledFor?: string;
   platforms: string[];
   thumb: string; // tailwind gradient classes for the prototype
+  imageUrl?: string;
 };
 
 export const LIBRARY: ContentItem[] = [

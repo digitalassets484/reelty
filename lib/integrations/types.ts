@@ -76,3 +76,8 @@ export interface PictureProvider {
 export interface SchedulerProvider {
   schedule(req: ScheduleRequest): Promise<ScheduleResult>;
 }
+
+// Generative image provider (Gemini) — optional AI backgrounds/lifestyle art.
+export interface ImageGenProvider {
+  generate(prompt: string): Promise<{ imageUrl: string }>;
+}

@@ -56,6 +56,7 @@ export async function getDashboardData(agentId: string): Promise<DashboardData |
       scheduledFor: c.scheduledFor ? c.scheduledFor.toISOString() : undefined,
       platforms: c.platforms ? c.platforms.split(",").filter(Boolean) : [],
       thumb: c.thumb,
+      imageUrl: c.imageUrl ?? undefined,
     })),
     socials: agent.socials.map((s) => ({
       platform: s.platform as SocialAccount["platform"],

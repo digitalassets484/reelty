@@ -47,8 +47,15 @@ export default function LibraryPage() {
               onClick={() => setActive(item)}
               className="card group overflow-hidden p-0 text-left transition hover:shadow-glow"
             >
-              <div className={`relative flex aspect-video items-center justify-center bg-gradient-to-br ${item.thumb} text-white`}>
-                {item.kind === "video" ? <Video size={28} /> : <ImageIcon size={28} />}
+              <div className="relative aspect-video overflow-hidden">
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${item.thumb} text-white`}>
+                    {item.kind === "video" ? <Video size={28} /> : <ImageIcon size={28} />}
+                  </div>
+                )}
                 <span className={`chip absolute right-3 top-3 ${statusStyles[item.status]}`}>{item.status}</span>
               </div>
               <div className="p-4">
@@ -81,9 +88,14 @@ function DetailDrawer({ item, onClose }: { item: ContentItem; onClose: () => voi
           </button>
         </div>
 
-        <div className={`mt-4 flex aspect-video items-center justify-center rounded-2xl bg-gradient-to-br ${item.thumb} text-white`}>
-          {item.kind === "video" ? <Video size={32} /> : <ImageIcon size={32} />}
-        </div>
+        {item.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.imageUrl} alt="" className="mt-4 aspect-video w-full rounded-2xl object-cover" />
+        ) : (
+          <div className={`mt-4 flex aspect-video items-center justify-center rounded-2xl bg-gradient-to-br ${item.thumb} text-white`}>
+            {item.kind === "video" ? <Video size={32} /> : <ImageIcon size={32} />}
+          </div>
+        )}
 
         <h2 className="mt-5 text-lg font-bold text-ink">{item.title}</h2>
         <div className="mt-1 text-sm text-ink/45">{item.typeLabel}</div>

@@ -10,11 +10,13 @@ import { ClaudeClient } from "./claude-real";
 import { HeyGenClient } from "./heygen-real";
 import { PlacidClient } from "./placid-real";
 import { GHLClient } from "./ghl-real";
+import { GeminiImageClient } from "./gemini-real";
 import type {
   ScriptProvider,
   VideoProvider,
   PictureProvider,
   SchedulerProvider,
+  ImageGenProvider,
 } from "./types";
 
 export const scriptProvider: ScriptProvider = process.env.ANTHROPIC_API_KEY
@@ -33,5 +35,10 @@ export const schedulerProvider: SchedulerProvider =
   process.env.GHL_API_KEY && process.env.GHL_LOCATION_ID
     ? new GHLClient(process.env.GHL_API_KEY, process.env.GHL_LOCATION_ID)
     : new MockGHL();
+
+// Null when no key — AI-image generation is an optional add-on.
+export const imageGenProvider: ImageGenProvider | null = process.env.GEMINI_API_KEY
+  ? new GeminiImageClient(process.env.GEMINI_API_KEY)
+  : null;
 
 export * from "./types";

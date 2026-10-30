@@ -61,7 +61,7 @@ export async function approveWeekly(weeklyId: string) {
 }
 
 // Save a generated picture post to the library.
-export async function savePicture(input: { title: string; caption: string; thumb: string }) {
+export async function savePicture(input: { title: string; caption: string; thumb: string; imageUrl?: string }) {
   const agentId = await getSessionAgentId();
   if (!agentId) return { error: "unauthorized" };
   const item = await prisma.contentItem.create({
@@ -74,6 +74,7 @@ export async function savePicture(input: { title: string; caption: string; thumb
       caption: input.caption,
       platforms: await agentPlatforms(agentId),
       thumb: input.thumb,
+      imageUrl: input.imageUrl,
     },
   });
   return { ok: true, id: item.id };

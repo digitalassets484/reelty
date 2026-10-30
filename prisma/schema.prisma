@@ -49,6 +49,7 @@ model ContentItem {
   caption      String
   platforms    String // comma-separated
   thumb        String
+  imageUrl     String? // rendered card or AI image (picture posts)
   scheduledFor DateTime?
   createdAt    DateTime  @default(now())
 }
