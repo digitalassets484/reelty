@@ -10,6 +10,7 @@ import {
   CalendarClock,
   Settings,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logoutAction } from "@/app/actions";
@@ -23,7 +24,7 @@ const NAV = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOwner = false }: { isOwner?: boolean }) {
   const path = usePathname();
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-white/5 bg-ink px-4 py-5 text-white md:flex">
@@ -49,9 +50,17 @@ export function Sidebar() {
           );
         })}
       </nav>
+      {isOwner && (
+        <Link
+          href="/admin"
+          className="mb-2 flex items-center gap-3 rounded-xl bg-accent/15 px-3 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/25"
+        >
+          <ShieldCheck size={18} /> Owner admin
+        </Link>
+      )}
       <Link
         href="/dashboard/create"
-        className="btn-primary mt-4 w-full !py-2.5 text-sm"
+        className="btn-primary mt-2 w-full !py-2.5 text-sm"
       >
         + New content
       </Link>

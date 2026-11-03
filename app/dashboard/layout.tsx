@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen bg-ink/[0.02]">
-      <Sidebar />
+      <Sidebar isOwner={data.agent.isOwner} />
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardProvider data={data}>{children}</DashboardProvider>
       </div>

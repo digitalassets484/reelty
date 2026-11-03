@@ -13,6 +13,7 @@ async function main() {
     data: {
       email: "peter@reelty.app",
       passwordHash: await bcrypt.hash("reelty123", 10),
+      isOwner: true,
       name: "Peter Eki",
       brokerage: "lpt realty",
       niche: "New builds",
@@ -115,7 +116,53 @@ async function main() {
     ],
   });
 
-  console.log("Seeded agent:", agent.email);
+  // Demo client agents so the owner/admin dashboard is populated.
+  const demoClients = [
+    { name: "Sarah Chen", email: "sarah@demo.test", brokerage: "Royal LePage", niche: "Luxury", plan: "Pro", creditsTotal: 30, creditsUsed: 18, twinStatus: "ready", socials: 3, videos: 9 },
+    { name: "Mike Thompson", email: "mike@demo.test", brokerage: "Re/Max First", niche: "Resale", plan: "Growth", creditsTotal: 20, creditsUsed: 6, twinStatus: "ready", socials: 2, videos: 4 },
+    { name: "Priya Patel", email: "priya@demo.test", brokerage: "eXp Realty", niche: "Investor", plan: "Starter", creditsTotal: 8, creditsUsed: 2, twinStatus: "training", socials: 2, videos: 2 },
+    { name: "Dan Rivera", email: "dan@demo.test", brokerage: "", niche: "New builds", plan: "Starter", creditsTotal: 8, creditsUsed: 0, twinStatus: "none", socials: 0, videos: 0 },
+  ];
+  const platforms = ["instagram", "facebook", "tiktok", "youtube", "linkedin"];
+
+  for (const c of demoClients) {
+    const client = await prisma.agent.create({
+      data: {
+        email: c.email,
+        passwordHash: await bcrypt.hash("demo1234", 10),
+        name: c.name,
+        brokerage: c.brokerage,
+        niche: c.niche,
+        plan: c.plan,
+        creditsTotal: c.creditsTotal,
+        creditsUsed: c.creditsUsed,
+        approveBeforePosting: true,
+        twinStatus: c.twinStatus,
+        logoLabel: c.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+      },
+    });
+    if (c.socials > 0) {
+      await prisma.socialAccount.createMany({
+        data: platforms.slice(0, c.socials).map((p) => ({ agentId: client.id, platform: p, handle: `@${c.name.split(" ")[0].toLowerCase()}`, connected: true })),
+      });
+    }
+    for (let i = 0; i < c.videos; i++) {
+      await prisma.contentItem.create({
+        data: {
+          agentId: client.id,
+          kind: "video",
+          title: `${c.niche} reel #${i + 1}`,
+          typeLabel: "Market Update",
+          status: i % 3 === 0 ? "posted" : i % 3 === 1 ? "scheduled" : "ready",
+          caption: "Auto-generated content.",
+          platforms: platforms.slice(0, Math.max(1, c.socials)).join(","),
+          thumb: "from-brand to-brand-dark",
+        },
+      });
+    }
+  }
+
+  console.log("Seeded owner + clients:", agent.email, "+", demoClients.length);
 }
 
 main()

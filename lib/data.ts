@@ -4,6 +4,7 @@ import type { ContentItem, SocialAccount, WeeklyScript } from "./mock-data";
 export type AccountView = {
   name: string;
   email: string;
+  isOwner: boolean;
   brokerage: string;
   niche: string;
   plan: string;
@@ -36,6 +37,7 @@ export async function getDashboardData(agentId: string): Promise<DashboardData |
     agent: {
       name: agent.name,
       email: agent.email,
+      isOwner: agent.isOwner,
       brokerage: agent.brokerage,
       niche: agent.niche,
       plan: agent.plan,

@@ -12,6 +12,7 @@ model Agent {
   id                   String          @id @default(cuid())
   email                String          @unique
   passwordHash         String?
+  isOwner              Boolean         @default(false)
   name                 String
   brokerage            String
   niche                String          @default("New builds")
