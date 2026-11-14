@@ -1,4 +1,5 @@
 import { scriptProvider } from "./integrations";
+import { MockClaude } from "./integrations/claude";
 
 // Generates this week's 3 drafts for one agent, tailored to their niche.
 // Uses the script provider (real Claude when keyed, mock otherwise), so the
@@ -39,12 +40,21 @@ export async function weeklyScriptsFor(agent: {
 
   const rows = [];
   for (const a of angles) {
-    const s = await scriptProvider.write({
+    const request = {
       videoType: a.videoType,
       brokerage: agent.brokerage,
       agentName: agent.name,
       inputs: a.inputs,
-    });
+    };
+    // Fall back to the mock generator if the real provider fails (no credit,
+    // rate limit, outage) so the Monday Drop always produces 3 drafts.
+    let s;
+    try {
+      s = await scriptProvider.write(request);
+    } catch (e) {
+      console.error("[weekly] provider failed, falling back to mock:", e);
+      s = await new MockClaude().write(request);
+    }
     rows.push({ tag: a.tag, title: a.title, hook: s.hook, caption: s.caption });
   }
   return rows;
