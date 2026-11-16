@@ -128,7 +128,7 @@ export const PLANS: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    price: 97,
+    price: 150,
     videos: 8,
     blurb: "Get posting consistently without the work.",
     features: [
@@ -142,7 +142,7 @@ export const PLANS: Plan[] = [
   {
     id: "growth",
     name: "Growth",
-    price: 197,
+    price: 250,
     videos: 20,
     blurb: "A video of the real you, every time.",
     featured: true,
@@ -157,7 +157,7 @@ export const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    price: 397,
+    price: 350,
     videos: 30,
     blurb: "Maximum output, maximum polish.",
     features: [
